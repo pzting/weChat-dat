@@ -3,6 +3,7 @@ let fs = require('fs');
 let path = require('path');
 let async = require('async');
 let dirfile = require('dirfile');
+let {OutDir} = require('../config');
 
 //值是多少自己算。
 let base = 0xFF;
@@ -14,65 +15,74 @@ let pngB = 0x50;
 let bmpA = 0x42;
 let bmpB = 0x4d;
 let count = 0;
-function decoder (scanDir){
-    var fileList = dirfile(scanDir,false,true,function(filePath,stat){
-        return path.extname(filePath) == '.dat';
-    },function(filePath,stat){
-        return {
-            filePath : filePath
-        }
-    })
-    async.mapLimit(fileList,50,function(item,cb){
-        convert(item,cb);
-    },function(){
-        console.log('解码完毕,共计'+count+'个文件');
-        process.exit(0);
-    })  
+
+function decoder(scanDir) {
+  var fileList = dirfile(scanDir, false, true, function (filePath, stat) {
+    return path.extname(filePath) == '.dat';
+  }, function (filePath, stat) {
+    return {
+      filePath: filePath
+    }
+  })
+  async.mapLimit(fileList, 50, function (item, cb) {
+    convert(item, cb);
+  }, function () {
+    console.log('解码完毕,共计' + count + '个文件');
+    process.exit(0);
+  })
 }
 
 //convert
-function convert(item,cb){
-    let absPath =item.filePath;
-    let extname = '.jpg';
-    fs.readFile(absPath,(err,content)=>{
-        if(err){
-            console.log('解码失败:'+absPath);
-            cb(null);
-        }else{
-            let firstV = content[0],
-                nextV = content[1],
-                jT = firstV ^ base,
-                jB = nextV ^ next,
-                gT = firstV ^ gifA,
-                gB = nextV ^ gifB,
-                pT = firstV ^ pngA,
-                pB = nextV ^ pngB;
-                bT = firstV ^ bmpA;
-                bB = nextV ^ bmpB;
-            var v = firstV ^ base;
-            if(jT == jB){
-                v = jT;
-                extname = '.jpg';
-            }else if(gT == gB){
-                v = gT;
-                extname = '.gif';
-            }else if(pT == pB){
-                v = pT;
-                extname = '.png';
-            }else if(bT == bB){
-                v = bT;
-                extname = '.bmp';
-            }
-            let imgPath = path.join(path.dirname(absPath),path.basename(absPath)+extname);
-            let bb = content.map(br=>{
-                return br ^ v
-            })
-            count++;
-            fs.writeFileSync(imgPath,bb)
-            cb(null);
-        }
-        
-    })
+function convert(item, cb) {
+  let absPath = item.filePath;
+  let extname = '.jpg';
+  fs.readFile(absPath, (err, content) => {
+    if (err) {
+      console.log('解码失败:' + absPath);
+      cb(null);
+    } else {
+      let firstV = content[0],
+        nextV = content[1],
+        jT = firstV ^ base,
+        jB = nextV ^ next,
+        gT = firstV ^ gifA,
+        gB = nextV ^ gifB,
+        pT = firstV ^ pngA,
+        pB = nextV ^ pngB;
+      bT = firstV ^ bmpA;
+      bB = nextV ^ bmpB;
+      var v = firstV ^ base;
+      if (jT == jB) {
+        v = jT;
+        extname = '.jpg';
+      } else if (gT == gB) {
+        v = gT;
+        extname = '.gif';
+      } else if (pT == pB) {
+        v = pT;
+        extname = '.png';
+      } else if (bT == bB) {
+        v = bT;
+        extname = '.bmp';
+      }
+      if(OutDir){
+        fs.mkdir(path.join(path.dirname(absPath),OutDir),(err)=>{
+          console.log('创建文件夹错误',err)
+        })
+      }
+
+      let outPath = OutDir?path.join(path.dirname(absPath),OutDir):path.dirname(absPath)
+      let imgPath = path.join(outPath, path.basename(absPath) + extname);
+      // let imgPath = path.join(__dirname,path.basename(absPath)+extname);
+      let bb = content.map(br => {
+        return br ^ v
+      })
+      count++;
+      fs.writeFileSync(imgPath, bb)
+      cb(null);
+    }
+
+  })
 }
 
-module.exports= decoder;
+module.exports = decoder;

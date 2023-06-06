@@ -1,3 +1,2 @@
- const DatDir = 'd:/2022-03/';
-
- module.exports = DatDir;
+exports.DatDir = 'd:/2022-03/';
+exports.OutDir = 'img';
