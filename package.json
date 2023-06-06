@@ -1,0 +1,23 @@
+{
+  "name": "wechat-dat",
+  "version": "1.0.0",
+  "description": "转换dat格式",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pzting/weChat-dat.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pzting/weChat-dat/issues"
+  },
+  "homepage": "https://github.com/pzting/weChat-dat#readme",
+  "dependencies": {
+    "async": "^3.2.4"
+  }
+}
