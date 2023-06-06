@@ -24,6 +24,24 @@ function decoder(scanDir) {
       filePath: filePath
     }
   })
+  // 是否创建文件夹放转换的图片
+  if (OutDir) {
+    let outFile = path.join(scanDir, OutDir);
+    fs.exists(outFile, (exists) => {
+      if (exists) {
+        console.log("文件已存在");
+      } else {
+        fs.mkdir(outFile, (err) => {
+          if (err) {
+            console.log('创建文件夹错误', err)
+          }
+          console.log('创建文件夹成功!');
+        })
+        console.log("文件不存在");
+      }
+
+    });
+  }
   async.mapLimit(fileList, 50, function (item, cb) {
     convert(item, cb);
   }, function () {
@@ -65,13 +83,9 @@ function convert(item, cb) {
         v = bT;
         extname = '.bmp';
       }
-      if(OutDir){
-        fs.mkdir(path.join(path.dirname(absPath),OutDir),(err)=>{
-          console.log('创建文件夹错误',err)
-        })
-      }
 
-      let outPath = OutDir?path.join(path.dirname(absPath),OutDir):path.dirname(absPath)
+
+      let outPath = OutDir ? path.join(path.dirname(absPath), OutDir) : path.dirname(absPath)
       let imgPath = path.join(outPath, path.basename(absPath) + extname);
       // let imgPath = path.join(__dirname,path.basename(absPath)+extname);
       let bb = content.map(br => {
